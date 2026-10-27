@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRUD de Productos</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      padding: 32px 16px;
+    }
+
+    .contenedor {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 4px;
+    }
+
+    .subtitulo {
+      color: #64748b;
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      margin-bottom: 16px;
+    }
+
+    .campo {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .acciones {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.05s;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-primario {
+      background: #2563eb;
+      color: #fff;
+      flex: 1;
+    }
+
+    .btn-secundario {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .btn-mini {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 6px;
+    }
+
+    .btn-editar {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .btn-eliminar {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .tabla-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th {
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #64748b;
+      padding: 8px 10px;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .descripcion {
+      max-width: 220px;
+      color: #64748b;
+    }
+
+    .img-celda {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .img-celda .sin-imagen {
+      font-size: 0.6rem;
+      line-height: 1.1;
+      color: #94a3b8;
+      text-align: center;
+      padding: 2px;
+    }
+
+    .miniatura {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #fff;
+    }
+
+    .preview {
+      margin-top: 10px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .preview.visible {
+      display: flex;
+    }
+
+    .preview img {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+    }
+
+    .preview small {
+      color: #94a3b8;
+      font-size: 0.75rem;
+      word-break: break-all;
+    }
+
+    .vacio {
+      text-align: center;
+      color: #94a3b8;
+      padding: 32px 10px;
+      font-size: 0.9rem;
+    }
+
+    .aviso {
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .aviso.ok {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .aviso.error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .encabezado-tabla {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .encabezado-tabla h2 {
+      margin-bottom: 0;
+    }
+
+    .contador {
+      font-size: 0.78rem;
+      background: #e0e7ff;
+      color: #3730a3;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <h1>CRUD de Productos</h1>
+    <p class="subtitulo">Consumiendo la API de <code>/producto</code></p>
+
+    <div id="aviso" class="aviso"></div>
+
+    <div class="layout">
+      <!-- Formulario -->
+      <div class="card">
+        <h2 id="titulo-form">Nuevo producto</h2>
+        <form id="form-producto">
+          <div class="campo">
+            <label for="nombre">Nombre *</label>
+            <input type="text" id="nombre" name="nombre" maxlength="200" required>
+          </div>
+
+          <div class="campo">
+            <label for="precio">Precio</label>
+            <input type="number" id="precio" name="precio" step="0.01" min="0" placeholder="0.00">
+          </div>
+
+          <div class="campo">
+            <label for="cantidad">Cantidad</label>
+            <input type="number" id="cantidad" name="cantidad" step="1" min="0" placeholder="0">
+          </div>
+
+          <div class="campo">
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" name="descripcion"></textarea>
+          </div>
+
+          <div class="campo">
+            <label for="imagen">Imagen (URL)</label>
+            <input type="text" id="imagen" name="imagen" maxlength="255" placeholder="https://...">
+            <div class="preview" id="preview">
+              <img id="preview-img" alt="Vista previa">
+              <small id="preview-url"></small>
+            </div>
+          </div>
+
+          <div class="acciones">
+            <button type="submit" class="btn-primario" id="btn-guardar">Guardar</button>
+            <button type="button" class="btn-secundario" id="btn-cancelar" hidden>Cancelar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tabla -->
+      <div class="card">
+        <div class="encabezado-tabla">
+          <h2>Lista de productos</h2>
+          <span class="contador" id="contador">0</span>
+        </div>
+
+        <div class="tabla-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Descripción</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-productos">
+              <tr>
+                <td colspan="7" class="vacio">Cargando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = "/producto";
+
+    const form = document.getElementById("form-producto");
+    const tabla = document.getElementById("tabla-productos");
+    const aviso = document.getElementById("aviso");
+    const contador = document.getElementById("contador");
+    const tituloForm = document.getElementById("titulo-form");
+    const btnGuardar = document.getElementById("btn-guardar");
+    const btnCancelar = document.getElementById("btn-cancelar");
+
+    let productos = [];
+    let idEdicion = null;
+
+    // ---------- Utilidades ----------
+    function mostrarAviso(mensaje, tipo = "ok") {
+      aviso.textContent = mensaje;
+      aviso.className = "aviso " + tipo;
+      clearTimeout(mostrarAviso.timer);
+      mostrarAviso.timer = setTimeout(() => {
+        aviso.className = "aviso";
+      }, 3500);
+    }
+
+    function escapar(texto) {
+      return String(texto ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    async function peticion(url, opciones = {}) {
+      const respuesta = await fetch(url, {
+        headers: { "Content-Type": "application/json" },
+        ...opciones,
+      });
+
+      let datos = null;
+      try {
+        datos = await respuesta.json();
+      } catch (e) {
+        datos = null;
+      }
+
+      if (!respuesta.ok) {
+        throw new Error((datos && datos.mensaje) || "Error en la petición (" + respuesta.status + ")");
+      }
+
+      return datos;
+    }
+
+    // ---------- Render ----------
+    function renderizar() {
+      contador.textContent = productos.length;
+
+      if (productos.length === 0) {
+        tabla.innerHTML = '<tr><td colspan="7" class="vacio">No hay productos registrados</td></tr>';
+        return;
+      }
+
+      tabla.innerHTML = productos
+        .map(
+          (p) => `
+          <tr>
+            <td>${escapar(p.id)}</td>
+            <td>
+              <div class="img-celda">
+                <span class="sin-imagen">Sin<br>imagen</span>
+                ${p.imagen ? `<img class="miniatura" src="${escapar(p.imagen)}" alt="${escapar(p.nombre)}" loading="lazy" onerror="this.remove()">` : ""}
+              </div>
+            </td>
+            <td><strong>${escapar(p.nombre)}</strong></td>
+            <td>${p.precio !== null && p.precio !== undefined ? escapar(p.precio) : "-"}</td>
+            <td>${p.cantidad !== null && p.cantidad !== undefined ? escapar(p.cantidad) : "-"}</td>
+            <td class="descripcion">${escapar(p.descripcion) || "-"}</td>
+            <td>
+              <button class="btn-mini btn-editar" onclick="editar(${p.id})">Editar</button>
+              <button class="btn-mini btn-eliminar" onclick="eliminar(${p.id})">Eliminar</button>
+            </td>
+          </tr>`
+        )
+        .join("");
+    }
+
+    // ---------- Cargar ----------
+    async function cargarProductos() {
+      try {
+        productos = await peticion(API);
+        renderizar();
+      } catch (error) {
+        tabla.innerHTML = '<tr><td colspan="7" class="vacio">No se pudo cargar la lista</td></tr>';
+        mostrarAviso(error.message, "error");
+      }
+    }
+
+    // ---------- Crear / actualizar ----------
+    function datosDelFormulario() {
+      const datos = {
+        nombre: document.getElementById("nombre").value.trim(),
+        precio: document.getElementById("precio").value,
+        cantidad: document.getElementById("cantidad").value,
+        descripcion: document.getElementById("descripcion").value.trim(),
+        imagen: document.getElementById("imagen").value.trim(),
+      };
+
+      if (datos.precio === "") delete datos.precio;
+      if (datos.cantidad === "") delete datos.cantidad;
+      if (datos.descripcion === "") delete datos.descripcion;
+      if (datos.imagen === "") delete datos.imagen;
+
+      return datos;
+    }
+
+    form.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+
+      const datos = datosDelFormulario();
+      if (!datos.nombre) {
+        mostrarAviso("El nombre es obligatorio", "error");
+        return;
+      }
+
+      btnGuardar.disabled = true;
+
+      try {
+        if (idEdicion === null) {
+          await peticion(API, { method: "POST", body: JSON.stringify(datos) });
+          mostrarAviso("Producto registrado correctamente");
+        } else {
+          await peticion(API + "/" + idEdicion, { method: "PUT", body: JSON.stringify(datos) });
+          mostrarAviso("Producto actualizado correctamente");
+        }
+
+        reiniciarFormulario();
+        await cargarProductos();
+      } catch (error) {
+        mostrarAviso(error.message, "error");
+      } finally {
+        btnGuardar.disabled = false;
+      }
+    });
+
+    // ---------- Editar ----------
+    window.editar = function (id) {
+      const producto = productos.find((p) => Number(p.id) === Number(id));
+      if (!producto) return;
+
+      idEdicion = producto.id;
+      document.getElementById("nombre").value = producto.nombre || "";
+      document.getElementById("precio").value = producto.precio ?? "";
+      document.getElementById("cantidad").value = producto.cantidad ?? "";
+      document.getElementById("descripcion").value = producto.descripcion || "";
+      document.getElementById("imagen").value = producto.imagen || "";
+      actualizarPreview();
+
+      tituloForm.textContent = "Editar producto #" + producto.id;
+      btnGuardar.textContent = "Actualizar";
+      btnCancelar.hidden = false;
+
+      document.getElementById("nombre").focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    // ---------- Eliminar ----------
+    window.eliminar = async function (id) {
+      if (!confirm("¿Seguro que deseas eliminar el producto #" + id + "?")) return;
+
+      try {
+        await peticion(API + "/" + id, { method: "DELETE" });
+        mostrarAviso("Producto eliminado correctamente");
+
+        if (Number(idEdicion) === Number(id)) reiniciarFormulario();
+
+        await cargarProductos();
+      } catch (error) {
+        mostrarAviso(error.message, "error");
+      }
+    };
+
+    // ---------- Reset ----------
+    function reiniciarFormulario() {
+      idEdicion = null;
+      form.reset();
+      tituloForm.textContent = "Nuevo producto";
+      btnGuardar.textContent = "Guardar";
+      btnCancelar.hidden = true;
+      actualizarPreview();
+    }
+
+    // ---------- Vista previa de la imagen ----------
+    function actualizarPreview() {
+      const url = document.getElementById("imagen").value.trim();
+      const contenedor = document.getElementById("preview");
+      const img = document.getElementById("preview-img");
+      const texto = document.getElementById("preview-url");
+
+      if (!url) {
+        contenedor.classList.remove("visible");
+        img.removeAttribute("src");
+        texto.textContent = "";
+        return;
+      }
+
+      img.src = url;
+      texto.textContent = url;
+      contenedor.classList.add("visible");
+    }
+
+    document.getElementById("imagen").addEventListener("input", actualizarPreview);
+    document.getElementById("preview-img").addEventListener("error", () => {
+      document.getElementById("preview").classList.remove("visible");
+    });
+
+    btnCancelar.addEventListener("click", reiniciarFormulario);
+
+    // ---------- Inicio ----------
+    cargarProductos();
+  </script>
+</body>
+</html>
